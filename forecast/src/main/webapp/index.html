@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html ng-app="app" lang="pt-BR">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>HBSIS - Forecast</title>
+        <!-- Bootstrap core CSS -->
+    <link href="./libs/bootstrap-4.0.0/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <link href="./css/forecast.css" rel="stylesheet">
+    <link rel="icon" type="image/png" sizes="192x192"  href="https://hbsis.com.br/wp-content/themes/hbsis/assets/img/favicon/android-icon-192x192.png">
+	<link rel="icon" type="image/png" sizes="32x32" href="https://hbsis.com.br/wp-content/themes/hbsis/assets/img/favicon/favicon-32x32.png">
+	<link rel="icon" type="image/png" sizes="96x96" href="https://hbsis.com.br/wp-content/themes/hbsis/assets/img/favicon/favicon-96x96.png">
+	<link rel="icon" type="image/png" sizes="16x16" href="https://hbsis.com.br/wp-content/themes/hbsis/assets/img/favicon/favicon-16x16.png">
+  </head>
+
+  <body ng-app="app" ng-controller="forecastController as $ctrl">
+    <header>
+	  <!-- Fixed navbar -->
+	  <nav class="navbar navbar-expand-md navbar-dark fixed-top bg-hb">
+	  	 <img alt="HBSIS" src="https://hbsis.com.br/wp-content/themes/hbsis/assets/img/favicon/favicon-32x32.png">
+	    <a class="navbar-brand" href="#">&nbsp;Forecast</a>
+	    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+	      <span class="navbar-toggler-icon"></span>
+	    </button>
+	    <div class="collapse navbar-collapse" id="navbarCollapse">
+	      <ul class="navbar-nav mr-auto"></ul>
+	    </div>
+	  </nav>
+	</header>
+
+    <div class="container-fluid">
+      <div class="row">
+        <nav class="col-sm-3 col-md-2 hidden-xs-down bg-faded sidebar">
+          <!-- <ul class="nav nav-pills flex-column">
+          	<li class="nav-item nav-link">
+          	  	<button class="btn btn-outline-secondary" type="button">Adicionar Cidade</button>
+            </li>
+          </ul> -->	
+          <ul class="nav nav-pills flex-column">
+          	<li class="nav-item">
+              <a class="nav-link" data-toggle="modal" data-target="#mdCadastroCidade" ng-click="$ctrl.limpaCampos()" href="#" style="color: black;background-color: #e5ebf1;">+ Adicionar Cidade</a>
+            </li>
+          </ul>
+          <ul class="nav nav-pills flex-column">
+          	<li class="nav-item" ng-repeat="c in cities">
+              <a class="nav-link" href="#" ng-click="$ctrl.carregaPrevisao(c)">{{c}}</a>
+            </li>
+        </nav>
+        
+		
+        <main class="col-sm-9 offset-sm-3 col-md-10 offset-md-2 pt-3">
+          <h1>{{dscCidadeSelec}}</h1>
+		  <label>{{msgErroHora}}</label>	
+		  <img src="./ajax-loader.gif" width="50px" ng-show="!retOkDia && exibeLoader">
+          <section class="row" ng-show="retOkDia">
+          	<div class="col-md-1">&nbsp;</div>
+          	
+            <div class="col-md-2 col-sm-5 col-xs-12" ng-repeat="f in forecast">
+             
+              <div class="text-muted">{{f.dia}}</div>	
+              
+            	
+              <!-- <div class="text-muted">Sol com poucas nuvens</div> -->	
+              <div class="row">
+              	<div class="col-md-12">
+              		<img style="float:left" src="{{f.imagem}}">
+              		<p style="font-size: 14px;">{{f.minima}}<br>{{f.maxima}}</p>
+              	</div>              	
+              </div>  
+              <div class="text-muted">{{f.info}}</div>	
+              <div class="text-muted">Umidade: {{f.umidade}}%</div>	
+              <div class="text-muted">Vento: {{f.vento}}km/h</div>	                       
+            </div>
+          </section> 
+			<br>
+          <label>{{msgErroHora}}</label>
+          <img src="./ajax-loader.gif" width="50px" ng-show="!retOkHora && exibeLoader">
+          <div class="table-responsive" ng-show="retOkHora">
+            <h4>Previsão Horária</h4>
+            <table class="table table-striped">
+              <thead>
+                <tr>
+                  <th>Dia</th>
+                  <th>Hora</th>
+                  <th>Temperatura</th>
+                  <th>Informação</th>
+                  <th>Umidade</th>
+                  <th>Vento</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr ng-repeat="h in hourly">
+                  <td>{{h.dia}}</td>
+                  <td>{{h.hora}}</td>
+                  <td>{{h.temperatura}}</td>
+                  <td>{{h.info}}</td>
+                  <td>{{h.umidade}}%</td>
+                  <td>{{h.vento}}km/h</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </main>
+      </div>
+    </div>
+	
+	
+<!-- Modal -->
+
+<div class="modal fade" id="mdCadastroCidade" tabindex="-1" role="dialog" aria-labelledby="Cadastro de Cidades" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <p class="modal-title" id="exampleModalLabel">Cadastro de Cidade</p>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Fechar">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form name="frmCad">
+          <div class="form-group"><!-- 
+            <label for="dscPais" class="col-form-label">País:</label>
+            <input type="text" class="form-control" id="dscPais"> -->
+            <label for="dscCidade" class="col-form-label">Cidade:</label>
+            <input type="text" class="form-control" name="dscCidade" id="dscCidade" ng-model="dscCidade" ng-enter="$ctrl.salvar()" required="required">
+            <span ng-show="cadVazio"   class="msg-erro">Por favor, informe uma cidade</span>	
+            <span ng-show="cadErro"    class="msg-erro">{{msgErro}}</span>		
+            <span ng-show="cadSucesso" class="msg-sucesso">{{msgSucesso}}</span>			
+          </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">Fechar</button>
+        <button type="button" class="btn btn-primary btn-sm" ng-click="$ctrl.salvar()" ng-show="!cadSalvando">Salvar</button>
+        <img src="./ajax-loader.gif" width="20px" ng-show="cadSalvando">
+      </div>
+    </div>
+  </div>
+</div>
+
+
+    <script src="./libs/jquery-3.1.1/jquery-3.1.1.min.js"></script>
+    <script src="./libs/angular-1.6.1/angular.min.js"></script>
+    <script src="./libs/angular-1.6.1/angular-route.min.js"></script>
+    <script src="./libs/bootstrap-4.0.0/bootstrap.min.js"></script>
+    <script src="./libs/bootstrap-4.0.0/ui-bootstrap-tpls-2.5.0.min.js"></script>    
+    <script src="./js/app.js"></script>
+  </body>
+</html>
